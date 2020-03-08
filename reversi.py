@@ -3,12 +3,14 @@
 import os
 import sys
 
+
 EMPTY = "-"
 BLACK = "◎"
 WHITE = "◉"
 
 
 class Board():
+
   def __init__(self, map_file='boards/square.txt'):
     self.board = self.load_map(map_file)
 
@@ -50,6 +52,7 @@ class Board():
 
 
 class Reversi:
+
   def __init__(self):
     self.board = Board()
     self._current_player = BLACK
@@ -140,7 +143,6 @@ Playing: {self._current_player} | Score: {WHITE} = {score_black} vs {BLACK} = {s
     # 1, [0000] -> 0
     if rest_of_line[0] != player:
       return 1 + get_flip_count(player, rest_of_line[1:])
-
 
 
 if __name__ == '__main__':
