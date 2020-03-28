@@ -19,18 +19,11 @@ class Board():
 
     def __str__(self):
         # return '\n'.join([' '.join(line) for line in self.board])  # TODO fix, it outputs YX, instead of XY
-        result = "y"
-        for y in range(8, 0, -1):
-            # print y axis
-            result += f"\n{y} "
-            #print stone
+        result = "  " + " ".join(str(i+1) for i in range(8))
+        for y in range(8):  # letters
+            result += f"\n{chr(97+y)} "
             for x in range(8):
-                result += f"{self.board[x][y-1]} "
-        result += "\n"
-        # print x axis
-        for x in range(8+1):
-            result += f"{x} "
-        result += " x"
+                result += f"{self.board[x][y]} "
         return result
 
     def has_dominated(self, player):
@@ -150,51 +143,57 @@ class Board():
         for xi, yi in self._get_flips(player, move):
             self.board[xi][yi] = player.color
 
+    def count_stones(self, player):
+        count = 0
+        for y in range(8):
+           for x in range(8):
+               if self.board[x][y] == player.color:
+                   count += 1
+        return count
+
 
 class Player():
     def __init__(self, color):
         self.color = color
 
     def get_move(self):
-        return tuple([int(z)-1 for z in input(f"Player {self.color}, where to play? (x,y) ").strip().replace(' ', '').split(',')])
+        move = input(f"Player {self.color}, where will you play next? ").strip().replace(' ', '').replace(',', '')
+        x, y = move[0], move[1]
+        if x in [str(i) for i in range(8+1)] and y.lower() in "abcdefgh":
+            x, y = int(x)-1, ord(y.lower())-97
+        elif y in [str(i) for i in range(8+1)] and x.lower() in "abcdefgh":
+            x, y = int(y)-1, ord(x.lower())-97
+        return x, y
 
 
 class Game:
     def __init__(self):
         self.board = Board()
         self.players = [Player(WHITE), Player(BLACK)]
-        self.notification = ""
 
     def print(self):
         """
         Prints the game: the header, notification(s) (if any) and the board
         """
         os.system("clear")
-        print(f"""Reversi - By @josegalarza (2020)
-{self.notification if self.notification else ''}
-{self.board}
-""")
-        if self.notification:
-            self.notification = ""
+        print(f"Reversi - By @josegalarza (2020)\n\n{self.board}\n")
 
     def play(self):
         for player in cycle(self.players):
             self.print()
-
             if self.board.is_full() or self.board.has_dominated(player):
                 break  # game over TODO: get counts
-
             if self.board.has_valid_moves(player):
-                try:
-                    move = player.get_move()
-                    self.board.put_stone(player, move)
-                except KeyboardInterrupt:
-                    sys.exit(1)
-                except RuntimeError as e:
-                    self.notification = f"{e}"
-                    pass
-                except Exception as e:
-                    self.notification = f"Invalid move"
+                while True:
+                    try:
+                        move = player.get_move()
+                        self.board.put_stone(player, move)
+                        break
+                    except KeyboardInterrupt:
+                        sys.exit(1)
+                    except RuntimeError as e:
+                        pass
+        print("""Final score: """ + " | ".join(f"Player {p.color} = {self.board.count_stones(p)}" for p in self.players))
 
 
 if __name__ == '__main__':
