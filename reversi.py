@@ -1,150 +1,202 @@
 #!/usr/bin/env python
-
+from itertools import cycle
 import os
 import sys
 
 
-EMPTY = "-"
-BLACK = "◎"
-WHITE = "◉"
+WHITE="X"
+BLACK="O"
+EMPTY="."
 
 
 class Board():
+    def __init__(self):
+        self.board = [[EMPTY for i in range(8)] for i in range(8)]
+        self.board[3][4] = WHITE
+        self.board[3][3] = BLACK
+        self.board[4][3] = WHITE
+        self.board[4][4] = BLACK
 
-  def __init__(self, map_file='boards/square.txt'):
-    self.board = self.load_map(map_file)
+    def __str__(self):
+        # return '\n'.join([' '.join(line) for line in self.board])  # TODO fix, it outputs YX, instead of XY
+        result = "y"
+        for y in range(8, 0, -1):
+            # print y axis
+            result += f"\n{y} "
+            #print stone
+            for x in range(8):
+                result += f"{self.board[x][y-1]} "
+        result += "\n"
+        # print x axis
+        for x in range(8+1):
+            result += f"{x} "
+        result += " x"
+        return result
 
-  def load_map(self, map_file):
-    with open(map_file) as f:
-      lines = [line[:-1] for line in f.readlines()]
-      return [[cell for cell in line] for line in lines]
-
-  def render(self):
-    return '\n'.join([' '.join(line) for line in self.board])
-
-  def count_stones(self, color):
-    score = 0
-    for line in self.board:
-      score += len([x for x in line if x == color])
-    return score
-
-  def position(self, position):
-    #return self.board[position]
-    x, y = position
-    return self.board[y][x]
-
-  def put_stone(self, position, color):
-    #self.board[position] = color
-    x, y = position
-    self.board[y][x] = color
-    # TODO: reverse other stones
-
-  def can_put_stone(self, position, color):
-    x, y = position
-    try:
-      if self.board[y][x] != EMPTY:
-        return False
-      else:
-        # TODO: check if player can actually put a stone in this position
+    def has_dominated(self, player):
+        """
+        Returns False if the other player is still on the board
+        """
+        for y in range(8):
+           for x in range(8):
+               if self.board[x][y] != EMPTY and self.board[x][y] != player.color:
+                   return False
+        print("Dominated!")
+        input()
         return True
-    except IndexError:
-      return False
 
+    def is_full(self):
+        """
+        Returns True/False if the board is/isn't full.
+        """
+        for y in range(8):
+           for x in range(8):
+               if self.board[x][y] == EMPTY:
+                   return False
+        return True
 
-class Reversi:
+    def has_valid_moves(self, player):
+        return True if self._get_valid_moves(player) else False
 
-  def __init__(self):
-    self.board = Board()
-    self._current_player = BLACK
+    def _get_valid_moves(self, player):
+        valid_moves = []
+        for y in range(8):
+            for x in range(8):
+                move = x, y
+                if self.is_valid_move(player, move):
+                    valid_moves.append(move)
+        return valid_moves
 
-  def play(self):
-    while True:
-      player = self._current_player
-      self.render()
-      if self.board.count_stones(EMPTY) == 0:
-        self.game_over()
-      while True:
-        position = self._input_move()
-        if self.board.can_put_stone(position, player):
-          self.board.put_stone(position, player)
-          self._next_player()
-          break
-
-  def _next_player(self):
-    # TODO: check if other player can actually play
-    self._current_player = BLACK if self._current_player == WHITE else WHITE
-
-  def render(self):
-    score_white = self.board.count_stones(WHITE)
-    score_black = self.board.count_stones(BLACK)
-    render = f"""Reversi - by @josegalarza 2019
-Playing: {self._current_player} | Score: {WHITE} = {score_black} vs {BLACK} = {score_black}
-{self.board.render()}"""
-    os.system('clear')
-    print(render)
-
-  def _input_move(self):
-    while True:
-      move = input(f'Enter move (x,y) (:q to quit) > ')
-      if move == ':q':
-        sys.exit(0)
-      else:
-        x,y = tuple(move.replace(' ', '').split(','))
+    def is_valid_move(self, player, move):
+        """
+        Returns True/False if the player can/cannot play the move.
+        """
         try:
-          if int(x.strip()) in range(8) and int(y.strip()) in range(8):
-            return int(x), int(y)
+            result = False
+            x, y = move
+            if x not in range(8) or y not in range(8):
+               result = False  # Off the board
+            if self.board[x][y] != EMPTY:
+                result = False  # Position to momve is not empty
+            result = True if self._get_flips(player, move) else False
         except:
-          continue
-    # TODO get line(s) from movement. and try flip
+            pass
+        finally:
+            return result
 
-  def game_over(self):
-    print(f"Game over.")
-    sys.exit(0)
+    def _get_flips(self, player, move):
+        """
+        Return a list of tuples that represents stones (x,y positions) to flip.
+        """
+        flips = []
+        flips += self._get_flips_in_direction(player, move, direction=( 0,  1))  # up
+        flips += self._get_flips_in_direction(player, move, direction=( 0, -1))  # down
+        flips += self._get_flips_in_direction(player, move, direction=( 1,  0))  # right
+        flips += self._get_flips_in_direction(player, move, direction=(-1,  0))  # left
+        flips += self._get_flips_in_direction(player, move, direction=( 1,  1))  # up-right
+        flips += self._get_flips_in_direction(player, move, direction=(-1,  1))  # up-left
+        flips += self._get_flips_in_direction(player, move, direction=( 1, -1))  # down-right
+        flips += self._get_flips_in_direction(player, move, direction=(-1, -1))  # down-left
+        return flips
 
-  def _flip(line):
-    # Returns a new line flipped (or not) and a `did_flip` indicator True/False
-    did_flip = False
-    new_line = line[:]
+    def _get_flips_in_direction(self, player, move, direction):
+        flips = []
+        x, y = move
+        xd, yd = direction
+        line = self._get_line_in_direction(move, direction)
+        rest_of_line = line[1:]  # line[0] would be where the player just put their stone
+        flips_count = self._get_flip_count(player, rest_of_line)
+        for i in range(flips_count):
+            next_position = x + xd*(i+1), y + yd*(i+1)
+            flips.append(next_position)
+        return flips
 
-    try:
-      player = line[0]
-      rest_of_line = line[1:]
-    except IndexError:
-      return False, new_line
+    def _get_line_in_direction(self, position, direction):
+        """
+        Returns a list (line) of stones in a direction.
+        """
+        xp, yp = position
+        if xp not in range(8) or yp not in range(8):
+            return []
+        else:
+            xd, yd = direction
+            next_position = xp + xd, yp + yd
+            return [self.board[xp][yp]] + self._get_line_in_direction(next_position, direction)
 
-    count_flip = _get_flip_count(player, rest_of_line)
+    def _get_flip_count(self, player, rest_of_line):
+        if player.color not in rest_of_line:
+            # X, [O, O, O]
+            # X, []
+            return 0
+        if not rest_of_line:
+            # X, []
+            return 0
+        if player.color == rest_of_line[0]:
+            # X, [X, ...]
+            return 0
+        if rest_of_line[0] == EMPTY:
+            return 0
+        # X, [O, ..., X]
+        return 1 + self._get_flip_count(player, rest_of_line[1:])
 
-    if count_flip:
-      did_flip = True
-      for i in range(count_flip):
-        new_line[i+1] = player
+    def put_stone(self, player, move):
+        """
+        Checks if the move is valid, and if so, puts the stone and flip others.
+        """
+        if not self.is_valid_move(player, move):
+            raise RuntimeError("Invalid move")
+        x, y = move
+        self.board[x][y] = player.color
+        for xi, yi in self._get_flips(player, move):
+            self.board[xi][yi] = player.color
 
-    return new_line
 
-  def _get_flip_count(player, rest_of_line):
-    # 1, [] -> Error
-    if not rest_of_line:
-      return 0
+class Player():
+    def __init__(self, color):
+        self.color = color
 
-    try:
-      # 1, [111] -> 0
-      if rest_of_line[0] == player:
-        return 0
+    def get_move(self):
+        return tuple([int(z)-1 for z in input(f"Player {self.color}, where to play? (x,y) ").strip().replace(' ', '').split(',')])
 
-      # 1, [01] -> 1
-      # 1, [001] -> 2
-      if rest_of_line[0] != player and rest_of_line[1] == player:
-        return 1
-    except IndexError:
-      # 1, [1] -> 0
-      return 0
 
-    # 1, [0001] -> 3
-    # 1, [0000] -> 0
-    if rest_of_line[0] != player:
-      return 1 + get_flip_count(player, rest_of_line[1:])
+class Game:
+    def __init__(self):
+        self.board = Board()
+        self.players = [Player(WHITE), Player(BLACK)]
+        self.notification = ""
+
+    def print(self):
+        """
+        Prints the game: the header, notification(s) (if any) and the board
+        """
+        os.system("clear")
+        print(f"""Reversi - By @josegalarza (2020)
+{self.notification if self.notification else ''}
+{self.board}
+""")
+        if self.notification:
+            self.notification = ""
+
+    def play(self):
+        for player in cycle(self.players):
+            self.print()
+
+            if self.board.is_full() or self.board.has_dominated(player):
+                break  # game over TODO: get counts
+
+            if self.board.has_valid_moves(player):
+                try:
+                    move = player.get_move()
+                    self.board.put_stone(player, move)
+                except KeyboardInterrupt:
+                    sys.exit(1)
+                except RuntimeError as e:
+                    self.notification = f"{e}"
+                    pass
+                except Exception as e:
+                    self.notification = f"Invalid move"
 
 
 if __name__ == '__main__':
-  game = Reversi()
-  game.play()
+    game = Game()
+    game.play()
