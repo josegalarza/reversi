@@ -25,7 +25,7 @@ f . . . . . . . .
 g . . . . . . . .
 h . . . . . . . .
 
-Player O, where will you play next? 
+Player X, where will you play next? 
 ```
 
 Let's say player `X` plays a valid move, for example `c4`:
