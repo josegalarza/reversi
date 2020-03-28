@@ -1,3 +1,3 @@
 # Reversi
 
-Python implementation of the Reversi boardgame, aka. Othello.
+Python implementation of [Reversi](https://en.wikipedia.org/wiki/Reversi)
