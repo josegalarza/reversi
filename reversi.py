@@ -4,9 +4,11 @@ import os
 import sys
 
 
-WHITE="X"
-BLACK="O"
-EMPTY="."
+BLACK="⚫️"
+WHITE="⚪️"
+EMPTY="  "
+BACK_GREEN = "\x1b[0;30;42m"  # style=0=normal, front=30=black, back=42=green
+RESET_COLOR = "\x1b[0m"
 
 
 class Board():
@@ -18,13 +20,25 @@ class Board():
         self.board[4][4] = BLACK
 
     def __str__(self):
-        # return '\n'.join([' '.join(line) for line in self.board])  # TODO fix, it outputs YX, instead of XY
-        result = "  " + " ".join(str(i+1) for i in range(8))
-        for y in range(8):  # letters
-            result += f"\n{chr(97+y)} "
-            for x in range(8):
-                result += f"{self.board[x][y]} "
-        return result
+        b = self.board
+        return f"""    1  2  3  4  5  6  7  8
+    ─────────────────────── 
+ A │{BACK_GREEN}{b[0][0]}│{b[0][1]}│{b[0][2]}│{b[0][3]}│{b[0][4]}│{b[0][5]}│{b[0][6]}│{b[0][7]}{RESET_COLOR}│
+   │{BACK_GREEN}──┼──┼──┼──┼──┼──┼──┼──{RESET_COLOR}│
+ B │{BACK_GREEN}{b[1][0]}│{b[1][1]}│{b[1][2]}│{b[1][3]}│{b[1][4]}│{b[1][5]}│{b[1][6]}│{b[1][7]}{RESET_COLOR}│
+   │{BACK_GREEN}──┼──┼──┼──┼──┼──┼──┼──{RESET_COLOR}│
+ C │{BACK_GREEN}{b[2][0]}│{b[2][1]}│{b[2][2]}│{b[2][3]}│{b[2][4]}│{b[2][5]}│{b[2][6]}│{b[2][7]}{RESET_COLOR}│
+   │{BACK_GREEN}──┼──┼──┼──┼──┼──┼──┼──{RESET_COLOR}│
+ D │{BACK_GREEN}{b[3][0]}│{b[3][1]}│{b[3][2]}│{b[3][3]}│{b[3][4]}│{b[3][5]}│{b[3][6]}│{b[3][7]}{RESET_COLOR}│
+   │{BACK_GREEN}──┼──┼──┼──┼──┼──┼──┼──{RESET_COLOR}│
+ E │{BACK_GREEN}{b[4][0]}│{b[4][1]}│{b[4][2]}│{b[4][3]}│{b[4][4]}│{b[4][5]}│{b[4][6]}│{b[4][7]}{RESET_COLOR}│
+   │{BACK_GREEN}──┼──┼──┼──┼──┼──┼──┼──{RESET_COLOR}│
+ F │{BACK_GREEN}{b[5][0]}│{b[5][1]}│{b[5][2]}│{b[5][3]}│{b[5][4]}│{b[5][5]}│{b[5][6]}│{b[5][7]}{RESET_COLOR}│
+   │{BACK_GREEN}──┼──┼──┼──┼──┼──┼──┼──{RESET_COLOR}│
+ G │{BACK_GREEN}{b[6][0]}│{b[6][1]}│{b[6][2]}│{b[6][3]}│{b[6][4]}│{b[6][5]}│{b[6][6]}│{b[6][7]}{RESET_COLOR}│
+   │{BACK_GREEN}──┼──┼──┼──┼──┼──┼──┼──{RESET_COLOR}│
+ H │{BACK_GREEN}{b[7][0]}│{b[7][1]}│{b[7][2]}│{b[7][3]}│{b[7][4]}│{b[7][5]}│{b[7][6]}│{b[7][7]}{RESET_COLOR}│
+    ─────────────────────── """
 
     def has_dominated(self, player):
         """
@@ -34,8 +48,6 @@ class Board():
            for x in range(8):
                if self.board[x][y] != EMPTY and self.board[x][y] != player.color:
                    return False
-        print("Dominated!")
-        input()
         return True
 
     def is_full(self):
@@ -49,7 +61,10 @@ class Board():
         return True
 
     def has_valid_moves(self, player):
-        return True if self._get_valid_moves(player) else False
+        try:
+            return True if self._get_valid_moves(player) else False
+        except Exception as e:
+            return False
 
     def _get_valid_moves(self, player):
         valid_moves = []
@@ -64,18 +79,13 @@ class Board():
         """
         Returns True/False if the player can/cannot play the move.
         """
-        try:
-            result = False
-            x, y = move
-            if x not in range(8) or y not in range(8):
-               result = False  # Off the board
-            if self.board[x][y] != EMPTY:
-                result = False  # Position to momve is not empty
-            result = True if self._get_flips(player, move) else False
-        except:
-            pass
-        finally:
-            return result
+        x, y = move
+        if x not in range(8) or y not in range(8):
+            return False  # Off the board
+        elif self.board[x][y] != EMPTY:
+            return False  # Position to move is not empty
+        else:
+            return True if self._get_flips(player, move) else False
 
     def _get_flips(self, player, move):
         """
@@ -93,6 +103,7 @@ class Board():
         return flips
 
     def _get_flips_in_direction(self, player, move, direction):
+        # print(f"getting flips in direction: {direction}")
         flips = []
         x, y = move
         xd, yd = direction
@@ -143,13 +154,13 @@ class Board():
         for xi, yi in self._get_flips(player, move):
             self.board[xi][yi] = player.color
 
-    def count_stones(self, player):
-        count = 0
+    def get_player_score(self, player):
+        score = 0
         for y in range(8):
            for x in range(8):
                if self.board[x][y] == player.color:
-                   count += 1
-        return count
+                   score += 1
+        return score
 
 
 class Player():
@@ -157,32 +168,54 @@ class Player():
         self.color = color
 
     def get_move(self):
-        move = input(f"Player {self.color}, where will you play next? ").strip().replace(' ', '').replace(',', '')
-        x, y = move[0], move[1]
-        if x in [str(i) for i in range(8+1)] and y.lower() in "abcdefgh":
-            x, y = int(x)-1, ord(y.lower())-97
-        elif y in [str(i) for i in range(8+1)] and x.lower() in "abcdefgh":
-            x, y = int(y)-1, ord(x.lower())-97
+        # Input move
+        move = input( \
+            f"Where will you play next, {self.color} ? "
+        ).strip().replace(" ", "").replace(",", "").replace("|", "")
+        if len(move) != 2:
+            raise RuntimeError  # Invalid move
+        # Parse move
+        x, y = move[0].upper(), move[1].upper()
+        # fix move
+        if x in "12345678" and y.upper() in "ABCDEFGH":
+            x, y = y, x
+            x, y = ord(x.upper())-65, int(y)-1
+        elif x in "ABCDEFGH" and y in "12345678":
+            x, y = ord(x.upper())-65, int(y)-1
+        else:
+            raise RuntimeError  # Invalid move - can't parse
         return x, y
 
 
 class Game:
     def __init__(self):
         self.board = Board()
-        self.players = [Player(WHITE), Player(BLACK)]
+        self.players = [Player(BLACK), Player(WHITE)]
 
     def print(self):
         """
         Prints the game: the header, notification(s) (if any) and the board
         """
         os.system("clear")
-        print(f"Reversi - By @josegalarza (2020)\n\n{self.board}\n")
+        header = "Reversi • By @josegalarza (2020)"
+        p0 = self.players[0]
+        p1 = self.players[1]
+        p0_score = f"{p0.color}{'%3d' % self.board.get_player_score(p0)}"
+        p1_score = f"{p1.color}{'%3d' % self.board.get_player_score(p1)}"
+        render = f"""{header}
+
+Score: {p0_score} vs. {p1_score}
+
+{self.board}
+"""
+        print(render)
 
     def play(self):
         for player in cycle(self.players):
             self.print()
-            if self.board.is_full() or self.board.has_dominated(player):
-                break  # game over TODO: get counts
+            if self.board.is_full() \
+                or self.board.has_dominated(player):
+                break
             if self.board.has_valid_moves(player):
                 while True:
                     try:
@@ -193,7 +226,9 @@ class Game:
                         sys.exit(1)
                     except RuntimeError as e:
                         pass
-        print("""Final score: """ + " | ".join(f"Player {p.color} = {self.board.count_stones(p)}" for p in self.players))
+                    except Exception as e:
+                        pass
+        self.print()
 
 
 if __name__ == '__main__':

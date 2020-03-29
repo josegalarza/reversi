@@ -13,43 +13,65 @@ python reversi.py
 The initial board will be shown and the players will start playing in turns:
 
 ```
-Reversi - By @josegalarza (2020)
+Reversi • By @josegalarza (2020)
 
-  1 2 3 4 5 6 7 8
-a . . . . . . . .
-b . . . . . . . .
-c . . . . . . . .
-d . . . O X . . .
-e . . . X O . . .
-f . . . . . . . .
-g . . . . . . . .
-h . . . . . . . .
+Score: ⚫️  2 vs. ⚪️  2
 
-Player X, where will you play next? 
+    1  2  3  4  5  6  7  8
+    ───────────────────────
+ A │  │  │  │  │  │  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ B │  │  │  │  │  │  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ C │  │  │  │  │  │  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ D │  │  │  │⚫️│⚪️│  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ E │  │  │  │⚪️│⚫️│  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ F │  │  │  │  │  │  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ G │  │  │  │  │  │  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ H │  │  │  │  │  │  │  │  │
+    ───────────────────────
+
+Where will you play next, ⚫️ ?
 ```
 
-Let's say player `X` plays a valid move, for example `c4`:
+Let's say player `⚫️` plays a valid move, for example `F4`:
 
 ```bash
-Player X, where will you play next? c4
+It's your turn, player ⚫️! F4
 ```
 
 The boardgame will be updated with the player's move, and the other player will go next:
 
 ```
-Reversi - By @josegalarza (2020)
+Reversi • By @josegalarza (2020)
 
-  1 2 3 4 5 6 7 8
-a . . . . . . . .
-b . . . . . . . .
-c . . . X . . . .
-d . . . X X . . .
-e . . . X O . . .
-f . . . . . . . .
-g . . . . . . . .
-h . . . . . . . .
+Score: ⚫️  4 vs. ⚪️  1
 
-Player O, where will you play next?
+    1  2  3  4  5  6  7  8
+    ───────────────────────
+ A │  │  │  │  │  │  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ B │  │  │  │  │  │  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ C │  │  │  │  │  │  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ D │  │  │  │⚫️│⚪️│  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ E │  │  │  │⚫️│⚫️│  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ F │  │  │  │⚫️│  │  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ G │  │  │  │  │  │  │  │  │
+   │──┼──┼──┼──┼──┼──┼──┼──│
+ H │  │  │  │  │  │  │  │  │
+    ───────────────────────
+
+Where will you play next, ⚪️ ?
 ```
 
 For the actual rulese on how to play this game, visit the Wikipedia site.
@@ -64,6 +86,12 @@ For the actual rulese on how to play this game, visit the Wikipedia site.
 - Game ends when the board is full
 - Game ends if one player has "dominated", the other player is not longer in the board
 
+## v1.1
+
+- Better UI - colored board, emojis and score count
+- Fix bug of invalid input moves
+
 ## TODO
 
 - Handle cases where the game ends before the grid is ccompletely filled
+- Python2 compatible
