@@ -42,7 +42,7 @@ Where will you play next, ⚫️ ?
 Let's say player `⚫️` plays a valid move, for example `F4`:
 
 ```bash
-It's your turn, player ⚫️! F4
+Where will you play next, ⚫️ ? F4
 ```
 
 The boardgame will be updated with the player's move, and the other player will go next:
