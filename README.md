@@ -93,5 +93,5 @@ For the actual rulese on how to play this game, visit the Wikipedia site.
 
 ## TODO
 
-- Handle cases where the game ends before the grid is ccompletely filled
+- Handle cases where the game ends before the grid is completely filled
 - Python2 compatible
