@@ -10,75 +10,30 @@ Run the Python script:
 python reversi.py
 ```
 
-The initial board will be shown and the players will start playing in turns:
+The initial board will be shown and the players will start playing in turns.
 
-```
-Reversi • By @josegalarza (2020)
+Player `⚫️` goes first, let's say it plays a valid move, for example `F4`.
 
-Score: ⚫️  2 vs. ⚪️  2
+![Game start](doc/screenshot-1.png)
+ 
+The game will update the board with the player's move.
 
-    1  2  3  4  5  6  7  8
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- A │  │  │  │  │  │  │  │  │ A
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- B │  │  │  │  │  │  │  │  │ B
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- C │  │  │  │  │  │  │  │  │ C
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- D │  │  │  │⚫️│⚪️│  │  │  │ D
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- E │  │  │  │⚪️│⚫️│  │  │  │ E
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- F │  │  │  │  │  │  │  │  │ F
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- G │  │  │  │  │  │  │  │  │ G
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- H │  │  │  │  │  │  │  │  │ H
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
-    1  2  3  4  5  6  7  8
+I will then be the turn of the next player (assuming it can move).
 
-Where will you play next, ⚫️ ?
-```
-
-Let's say player `⚫️` plays a valid move, for example `F4`:
-
-```bash
-Where will you play next, ⚫️ ? F4
-```
-
-The boardgame will be updated with the player's move, and the other player will go next:
-
-```
-Reversi • By @josegalarza (2020)
-
-Score: ⚫️  4 vs. ⚪️  1
-
-    1  2  3  4  5  6  7  8
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- A │  │  │  │  │  │  │  │  │ A
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- B │  │  │  │  │  │  │  │  │ B
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- C │  │  │  │  │  │  │  │  │ C
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- D │  │  │  │⚫️│⚪️│  │  │  │ D
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- E │  │  │  │⚫️│⚫️│  │  │  │ E
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- F │  │  │  │⚫️│  │  │  │  │ F
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- G │  │  │  │  │  │  │  │  │ G
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
- H │  │  │  │  │  │  │  │  │ H
-   ┼──┼──┼──┼──┼──┼──┼──┼──┼
-    1  2  3  4  5  6  7  8
-
-Where will you play next, ⚪️ ?
-```
+![Next round](doc/screenshot-2.png)
 
 For the actual rulese on how to play this game, visit the Wikipedia site.
 
 ## Releases
+
+## v1.2
+
+- Better UI - square board
+
+## v1.1
+
+- Better UI - colored board, emojis and score count
+- Fix bug of invalid input moves
 
 ## v1.0
 
@@ -87,11 +42,6 @@ For the actual rulese on how to play this game, visit the Wikipedia site.
 - Evaluates an input move is valid or not
 - Game ends when the board is full
 - Game ends if one player has "dominated", the other player is not longer in the board
-
-## v1.1
-
-- Better UI - colored board, emojis and score count
-- Fix bug of invalid input moves
 
 ## TODO
 
