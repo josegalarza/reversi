@@ -26,6 +26,12 @@ For the actual rulese on how to play this game, visit the Wikipedia site.
 
 ## Releases
 
+## v1.3
+
+- Single player mode (PvAI)
+- Fix flip bug
+- Better UI
+
 ## v1.2
 
 - Better UI - square board
@@ -45,5 +51,4 @@ For the actual rulese on how to play this game, visit the Wikipedia site.
 
 ## TODO
 
-- Handle cases where the game ends before the grid is completely filled
 - Python2 compatible
