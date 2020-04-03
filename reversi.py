@@ -1,14 +1,24 @@
 #!/usr/bin/env python
+import copy
 from itertools import cycle
 import os
+from random import shuffle
 import sys
+import time
 
 
-BLACK="⚫️ "
-WHITE="⚪️ "
-EMPTY="   "
+BLACK=" ⚫️ "
+WHITE=" ⚪️ "
+EMPTY="    "
 BACK_GREEN = "\x1b[0;30;42m"  # style=0=normal, front=30=black, back=42=green
 RESET_COLOR = "\x1b[0m"
+DANGEROUS_POSITIONS = [
+    (0, 1), (0, 6),
+    (1, 0), (1, 1), (1, 6), (1, 7),
+    (6, 0), (6, 1), (6, 6), (6, 7),
+    (7, 1), (7, 6)
+]
+CORNER_POSITIONS = [(0, 0), (7, 0), (7, 7), (0, 7)]
 
 
 class Board():
@@ -21,25 +31,25 @@ class Board():
 
     def __str__(self):
         b = self.board
-        return f"""     1   2   3   4   5   6   7   8
-   {BACK_GREEN}┼───┼───┼───┼───┼───┼───┼───┼───┼{RESET_COLOR}
+        return f"""     1    2    3    4    5    6    7    8
+   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
  A {BACK_GREEN}│{b[0][0]}│{b[0][1]}│{b[0][2]}│{b[0][3]}│{b[0][4]}│{b[0][5]}│{b[0][6]}│{b[0][7]}│{RESET_COLOR} A
-   {BACK_GREEN}┼───┼───┼───┼───┼───┼───┼───┼───┼{RESET_COLOR}
+   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
  B {BACK_GREEN}│{b[1][0]}│{b[1][1]}│{b[1][2]}│{b[1][3]}│{b[1][4]}│{b[1][5]}│{b[1][6]}│{b[1][7]}│{RESET_COLOR} B
-   {BACK_GREEN}┼───┼───┼───┼───┼───┼───┼───┼───┼{RESET_COLOR}
+   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
  C {BACK_GREEN}│{b[2][0]}│{b[2][1]}│{b[2][2]}│{b[2][3]}│{b[2][4]}│{b[2][5]}│{b[2][6]}│{b[2][7]}│{RESET_COLOR} C
-   {BACK_GREEN}┼───┼───┼───┼───┼───┼───┼───┼───┼{RESET_COLOR}
+   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
  D {BACK_GREEN}│{b[3][0]}│{b[3][1]}│{b[3][2]}│{b[3][3]}│{b[3][4]}│{b[3][5]}│{b[3][6]}│{b[3][7]}│{RESET_COLOR} D
-   {BACK_GREEN}┼───┼───┼───┼───┼───┼───┼───┼───┼{RESET_COLOR}
+   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
  E {BACK_GREEN}│{b[4][0]}│{b[4][1]}│{b[4][2]}│{b[4][3]}│{b[4][4]}│{b[4][5]}│{b[4][6]}│{b[4][7]}│{RESET_COLOR} E
-   {BACK_GREEN}┼───┼───┼───┼───┼───┼───┼───┼───┼{RESET_COLOR}
+   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
  F {BACK_GREEN}│{b[5][0]}│{b[5][1]}│{b[5][2]}│{b[5][3]}│{b[5][4]}│{b[5][5]}│{b[5][6]}│{b[5][7]}│{RESET_COLOR} F
-   {BACK_GREEN}┼───┼───┼───┼───┼───┼───┼───┼───┼{RESET_COLOR}
+   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
  G {BACK_GREEN}│{b[6][0]}│{b[6][1]}│{b[6][2]}│{b[6][3]}│{b[6][4]}│{b[6][5]}│{b[6][6]}│{b[6][7]}│{RESET_COLOR} G
-   {BACK_GREEN}┼───┼───┼───┼───┼───┼───┼───┼───┼{RESET_COLOR}
+   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
  H {BACK_GREEN}│{b[7][0]}│{b[7][1]}│{b[7][2]}│{b[7][3]}│{b[7][4]}│{b[7][5]}│{b[7][6]}│{b[7][7]}│{RESET_COLOR} H
-   {BACK_GREEN}┼───┼───┼───┼───┼───┼───┼───┼───┼{RESET_COLOR}
-     1   2   3   4   5   6   7   8"""
+   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
+     1    2    3    4    5    6    7    8"""
 
     def has_dominated(self, player):
         """
@@ -109,7 +119,10 @@ class Board():
         xd, yd = direction
         line = self._get_line_in_direction(move, direction)
         rest_of_line = line[1:]  # line[0] would be where the player just put their stone
-        flips_count = self._get_flip_count(player, rest_of_line)
+        try:
+            flips_count = self._get_flip_count(player, rest_of_line)
+        except RuntimeError:
+            flips_count = 0
         for i in range(flips_count):
             next_position = x + xd*(i+1), y + yd*(i+1)
             flips.append(next_position)
@@ -139,7 +152,7 @@ class Board():
             # X, [X, ...]
             return 0
         if rest_of_line[0] == EMPTY:
-            return 0
+            raise RuntimeError
         # X, [O, ..., X]
         return 1 + self._get_flip_count(player, rest_of_line[1:])
 
@@ -162,10 +175,44 @@ class Board():
                    score += 1
         return score
 
+    def get_best_next_move(self, player):
+        """
+        Returns best next move for the `player` based on max score.
+        TODO: Predicts moves up to `look_head` times.
+        TODO: Should care more for strategic positions than just score.
+        """
+        valid_moves = self._get_valid_moves(player)
+        time.sleep(0.25 * (len(valid_moves)+1))
+        shuffle(valid_moves)
+        best_next_move = None
+        max_score = 0
+        # Avoid dangerous positions
+        safe_moves = list(filter(lambda move: move not in DANGEROUS_POSITIONS, valid_moves))
+        if safe_moves:
+            valid_moves = safe_moves
+        for move in valid_moves:
+            # Get the corners
+            if move in CORNER_POSITIONS:
+                return move
+            # Get to the walls
+            elif 0 in move:
+                return move
+            # Get max flip
+            else:
+                tmp_board = Board()
+                tmp_board.board = copy.deepcopy(self.board)  # copy this board
+                tmp_board.put_stone(player, move)
+                score = tmp_board.get_player_score(player)
+                if score > max_score:
+                    max_score = score
+                    best_next_move = move
+        return best_next_move
+
 
 class Player():
-    def __init__(self, color):
+    def __init__(self, color, is_bot=False):
         self.color = color
+        self.is_bot = is_bot
 
     def get_move(self):
         # Input move
@@ -192,7 +239,7 @@ class Game:
         self.board = Board()
         self.players = [Player(BLACK), Player(WHITE)]
 
-    def print(self):
+    def _print(self):
         """
         Prints the game: the header, notification(s) (if any) and the board
         """
@@ -212,14 +259,18 @@ Score: {p0_score} vs. {p1_score}
 
     def play(self):
         for player in cycle(self.players):
-            self.print()
+            self._print()
             if self.board.is_full() \
                 or self.board.has_dominated(player):
                 break
             if self.board.has_valid_moves(player):
                 while True:
                     try:
-                        move = player.get_move()
+                        if not player.is_bot:
+                            move = player.get_move()
+                        else:
+                            print(f"Player {player.color} is thinking...")
+                            move = self.board.get_best_next_move(player)
                         self.board.put_stone(player, move)
                         break
                     except KeyboardInterrupt:
@@ -228,9 +279,24 @@ Score: {p0_score} vs. {p1_score}
                         pass
                     except Exception as e:
                         pass
-        self.print()
+        self._print()
+
+    def start(self):
+        while True:
+            try:
+                self._print()
+                players = input("Number of players (1-2)? ").strip().replace(' ', '').replace('    ', '')
+                if players in ["1", "2"]:
+                    break
+            except KeyboardInterrupt:
+                sys.exit(1)
+            except Exception:
+                pass
+        if players == "1":
+            self.players[1].is_bot = True
+        self.play()
 
 
 if __name__ == '__main__':
     game = Game()
-    game.play()
+    game.start()
